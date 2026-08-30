@@ -85,9 +85,12 @@ record a large number of <span class="bg-[#fec200]/70 px-1 -mx-1">events</span>,
     <img src="/images/tokio-logo.svg" class="h-12 w-44 object-contain invert" />
     <span class="text-2xl">Tokio events</span>
   </div>
-  <div v-click="3" class="flex items-center gap-8">
-    <img src="/images/nvidia.svg" class="h-12 w-44 object-contain" />
-    <span class="text-2xl">GPU telemetry</span>
+  <div v-click="3" class="border border-dashed border-gray-400 rounded-lg py-3 -ml-4 pl-4 pr-6 inline-flex items-center gap-8">
+    <img src="/images/nvidia.svg" class="h-12 w-40 object-contain" />
+    <div>
+      <div class="text-2xl">GPU telemetry</div>
+      <div class="text-sm text-gray-500 mt-1">sources don't need to be part of dial9</div>
+    </div>
   </div>
 </div>
 
