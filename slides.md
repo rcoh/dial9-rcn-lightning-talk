@@ -67,32 +67,46 @@ What is a flight recorder and why do we need one? It's a way to record a large n
 ---
 
 <div class="text-2xl">
-record a large number of <span v-mark="{ at: 1, color: '#fec200', type: 'highlight' }">events</span>, compactly and efficiently
+record a large number of <span class="bg-[#fec200]/70 px-1 -mx-1">events</span>, compactly and efficiently
 </div>
 
-<h1 v-click="2" class="mt-12">What's an "event"?</h1>
+<h1 class="mt-8">What's an "event"?</h1>
 
-<div class="mt-10 space-y-8">
-  <div v-click="3" class="flex items-center gap-8">
-    <img src="/images/flamegraph.png" class="h-20 w-44 object-contain" />
+<div class="mt-8 space-y-6">
+  <div class="flex items-center gap-8">
+    <img src="/images/flamegraph.png" class="h-16 w-44 object-contain" />
     <span class="text-2xl">CPU stack samples</span>
   </div>
-  <div v-click="4" class="flex items-center gap-8">
-    <img src="/images/tracing-logo.png" class="h-20 w-44 object-contain" />
+  <div v-click="1" class="flex items-center gap-8">
+    <img src="/images/tracing-logo.png" class="h-16 w-44 object-contain" />
     <span class="text-2xl">application events / <code>tracing</code></span>
   </div>
-  <div v-click="5" class="flex items-center gap-8">
-    <img src="/images/tokio-logo.svg" class="h-14 w-44 object-contain invert" />
+  <div v-click="2" class="flex items-center gap-8">
+    <img src="/images/tokio-logo.svg" class="h-12 w-44 object-contain invert" />
     <span class="text-2xl">Tokio events</span>
+  </div>
+  <div v-click="3" class="flex items-center gap-8">
+    <img src="/images/nvidia.svg" class="h-12 w-44 object-contain" />
+    <span class="text-2xl">GPU telemetry</span>
   </div>
 </div>
 
 <!--
-An event can be a stack trace sampled by perf, a tracing span you record in your application, or a Tokio worker parking and unparking; this is an open ended system. Yesterday someone sent a PR to collect metrics from NVIDIA GPUs and report them as events.
+An event can be any useful information you can get out of your application;
 
-[click] [click] [click] [click] [click]
+One of the most useful is cpu samples like you might get from perf; the dial9 trace format unsurprisingly has specific support for stack frames, addresses, and symbols so that can be handled efficiently
 
-The thing that I realized helping teams with performance problems at AWS is that you often needed more than _just profiling_ or _just logs_ to solve a problem. You often needed the full picture. So that's what dial9 enables.
+[click]
+
+then once you line those up with events from your application you can start to answer some really interesting questions; for example: show me a flamegraph of my requests but only requests that were slower than p99. Diff that with p50 requests. You can do that because you know the exact threads and moments in time these requests were running on.
+
+[click]
+
+And if you are working on an async application, you can pull in worker park/unpark and poll start/stop from Tokio. One interesting tidbit here: with Tokio events specifically, I've heard dial9 solved teams' problems not because it showed that there was some issue with how they were using tokio, but because it showed that there _was not_ a problem which gave them enough of an insight to go find the problem elsewhere.
+
+[click]
+
+And this is open ended, last week someone sent a PR to pull telemetry from NVIDIA GPUs. Sources don't need to be part of dial9, they can be local to your own application.
 -->
 
 ---
@@ -210,10 +224,20 @@ finally, you can then upload persist, or whatever you want with the buffer. dial
 -->
 
 ---
-layout: statement
 ---
 
 # Where are we now?
+
+```bash
+cargo add dial9
+```
+
+<div class="text-sm text-gray-500 mt-8 mb-1">Cargo.toml</div>
+
+```toml
+[dependencies]
+dial9 = { version = "0.5", features = ["tokio", "cpu-profiling"] }
+```
 
 <!--
 Since then, dial9 has been used in production across AWS and beyond including in the rama proxy. Judging by who is sending PRs and bug reports, it's also being used by a bunch of other big Rust companies.
