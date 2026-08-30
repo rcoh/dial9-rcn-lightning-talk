@@ -36,7 +36,7 @@ Hello! I want to show folks dial9; dial9 is a flight recorder for Tokio (and Rus
 </div>
 
 <!--
-First an extremely quick intro about myself for anyone who I don't know. I'm Russell, I've working on Rust and Rust related things at AWS for the last 6 years, for the first 4 the AWS SDK for Rust and now I work on a team focused on making Rust in general succesful at Amazon. It was on this team, getting pulled into a pretty frequent escalations to help people with the performance of Rust code, that the need for a flight recorder really became apparent. So at the beginning of this year, I started working on dial9.
+First an extremely quick intro about myself for anyone who I don't know. I'm Russell, I've been working on Rust and Rust related things at AWS for the last 6 years, for the first 4 the AWS SDK for Rust and now I work on a team focused on making Rust in general successful at Amazon. It was on this team, getting pulled into pretty frequent escalations to help people with the performance of Rust code, that the need for a flight recorder really became apparent. So at the beginning of this year, I started working on dial9.
 -->
 
 ---
@@ -61,7 +61,7 @@ dial9 is a flight recorder for Rust
 </div>
 
 <!--
-What is a flight recorder and why do we need one? Its a way to record a large number of events, say, 1M/s on a production system and get them _off_ the host without degrading application p[erformance too much. But the word "event" is doing a lot of heavy lifting here.
+What is a flight recorder and why do we need one? It's a way to record a large number of events, say, 1M/s on a production system and get them _off_ the host without degrading application performance too much. But the word "event" is doing a lot of heavy lifting here.
 -->
 
 ---
@@ -92,7 +92,7 @@ An event can be a stack trace sampled by perf, a tracing span you record in your
 
 [click] [click] [click] [click] [click]
 
-The thing that I realized helping teams with performance problems at AWS is that you often needed more than _just profiling_ or _just logs_ to solve a problem. You often needed to full picture. So that's what dial9 enables.
+The thing that I realized helping teams with performance problems at AWS is that you often needed more than _just profiling_ or _just logs_ to solve a problem. You often needed the full picture. So that's what dial9 enables.
 -->
 
 ---
@@ -130,7 +130,7 @@ dial9 events take about 20-50ns to serialize
 
 [click]
 
-and once compress really well, you can end up with 10s of bytes per event uncompressed and <10B per event compressed. Each even also carries a nanosecond precision timestamp.
+and they compress really well, you can end up with 10s of bytes per event uncompressed and <10B per event compressed. Each event also carries a nanosecond precision timestamp.
 -->
 
 ---
@@ -216,7 +216,7 @@ layout: statement
 # Where are we now?
 
 <!--
-Since then, dial9 has been used in production across AWS and beyond including in the rama proxy. Juding by who is sending PRs and bug reports, its also being used by a bunch of other big Rust companies.
+Since then, dial9 has been used in production across AWS and beyond including in the rama proxy. Judging by who is sending PRs and bug reports, it's also being used by a bunch of other big Rust companies.
 -->
 
 ---
