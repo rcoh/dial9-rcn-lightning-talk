@@ -22,5 +22,5 @@ Edit [slides.md](./slides.md) to change the content. Speaker notes live in
 - `class: text-center` on slides that are a single big idea
 - UnoCSS/Tailwind utilities inline; accent colors are `blue-500` (dial9) and
   `amber-500` (cost/overhead), muted body text is `text-gray-400`
-- Big numbers get their own `text-6xl` statement slide
-- `v-click` / `v-switch` for reveals, ` ```md magic-move ` for code evolution
+- `v-click` for reveals, `v-mark` for highlights; `$clicks` drives the two-phase
+  bar chart on the serialization slide

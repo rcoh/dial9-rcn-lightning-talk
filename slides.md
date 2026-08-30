@@ -61,7 +61,7 @@ dial9 is a flight recorder for Rust
 </div>
 
 <!--
-What is a flight recorder and why do we need one? Its a way to record a large number of events, say, 1M/s on a production system and get them _off_ the host without degrading application performance too much. But the word "event" is doing a lot of heavy lifting here.
+What is a flight recorder and why do we need one? Its a way to record a large number of events, say, 1M/s on a production system and get them _off_ the host without degrading application p[erformance too much. But the word "event" is doing a lot of heavy lifting here.
 -->
 
 ---
@@ -92,7 +92,7 @@ An event can be a stack trace sampled by perf, a tracing span you record in your
 
 [click] [click] [click] [click] [click]
 
-The thing that I realized helping teams with performance problems at AWS is that you often needed more than _just profiling_ or _just logs_ to solve a problem. You often needed the full picture. So that's what dial9 enables.
+The thing that I realized helping teams with performance problems at AWS is that you often needed more than _just profiling_ or _just logs_ to solve a problem. You often needed to full picture. So that's what dial9 enables.
 -->
 
 ---
@@ -124,20 +124,20 @@ clicks: 1
 <div class="mt-12 text-xs text-gray-400">1M-event scheduler-telemetry mix (poll start/end, park, wake, CPU samples w/ stacks) · Apple M2 · medians of 8 runs</div>
 
 <!--
-Under the hood, it has two interesting ideas. The first is that by amortizing the schema in a datastream, you can have a datastream that is as flexible as JSON while being extremely compact and fast to serialize. This means that at runtime you can define a totally new type of event and it is still very efficient to serialize -- you don't have to codegen a serializer etc. etc.
+under the hood, it has two interesting ideas: the first is that by amortizing the schema in a datastream, you can have a datastream that is as flexible as JSON while being extremely compact and fast to serialize. This means that at runtime you can define a totally new type of event and it is still very efficient to serialize (you don't have to codegen a serializer etc. etc.)
 
 dial9 events take about 20-50ns to serialize
 
 [click]
 
-and they compress really well. You can end up with 10s of bytes per event uncompressed and under 10 bytes per event compressed. Each event also carries a nanosecond precision timestamp.
+and once compress really well, you can end up with 10s of bytes per event uncompressed and <10B per event compressed. Each even also carries a nanosecond precision timestamp.
 -->
 
 ---
 
 # Thread-local buffers
 
-<div class="text-lg text-gray-500 mt-1">no lock contention on the hot path</div>
+<div class="text-lg text-gray-500 mt-1">avoid contention on the hot path</div>
 
 <div class="text-xs text-gray-400 mt-5 text-center">1 MB each · events encoded in place · every push checks the global epoch counter</div>
 
@@ -182,14 +182,14 @@ and they compress really well. You can end up with 10s of bytes per event uncomp
 </div>
 
 <!--
-The second idea is that by, again, amortizing the cost of coordination, you can record events into large thread local buffers, which avoids lock contention when recording events.
+The second idea is that by again, amortizing the cost of coordination, you can record events into large thread local buffers, which avoids lock contention when recording events.
 -->
 
 ---
 class: text-center
 ---
 
-# Then get it off the host
+# Getting them off the host
 
 <div class="flex items-center justify-center gap-10 mt-16">
   <img src="/images/dial9-logo.svg" class="h-32" />
@@ -206,7 +206,7 @@ class: text-center
 </div>
 
 <!--
-Finally, you can then upload, persist, or whatever you want with the buffer. dial9 has a plugin for S3 but this is open ended.
+finally, you can then upload persist, or whatever you want with the buffer. dial9 has a plugin for S3 but this is open ended.
 -->
 
 ---
@@ -216,7 +216,7 @@ layout: statement
 # Where are we now?
 
 <!--
-Since then, dial9 has been used in production across AWS and beyond including in the rama proxy. Judging by who is sending PRs and bug reports, its also being used by a bunch of other big Rust companies.
+Since then, dial9 has been used in production across AWS and beyond including in the rama proxy. Juding by who is sending PRs and bug reports, its also being used by a bunch of other big Rust companies.
 -->
 
 ---
