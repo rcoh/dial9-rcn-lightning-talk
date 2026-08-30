@@ -61,7 +61,7 @@ dial9 is a flight recorder for Rust
 </div>
 
 <!--
-What is a flight recorder and why do we need one? It's a way to record a large number of events, say, 1M/s on a production system and get them _off_ the host without degrading application performance too much. But the word "event" is doing a lot of heavy lifting here.
+What is a flight recorder and why do we need one? It's a way to record a large number of events, teams at Amazon are hitting 1 million events per second, on a production system and get them _off_ the host without degrading application performance too much. But the word "event" is doing a lot of heavy lifting here.
 -->
 
 ---
@@ -199,7 +199,7 @@ and they compress really well, you can end up with 10s of bytes per event uncomp
 </div>
 
 <!--
-The second idea is that by again, amortizing the cost of coordination, you can record events into large thread local buffers, which avoids lock contention when recording events.
+The second idea is that by again, amortizing the cost of coordination, you can record events into large thread local buffers, which avoids lock contention when recording events. When the thread local buffer fills up, it flushes itself to the central buffer, but this is happening on the order of seconds so there effectively no contention. The central buffer writes the block into the main file.
 -->
 
 ---
@@ -223,7 +223,9 @@ class: text-center
 </div>
 
 <!--
-finally, you can then upload persist, or whatever you want with the buffer. dial9 has a plugin for S3 but this is open ended.
+then once every 30 seconds or so, we symbolize all the addresses present in the file, compress it, and you can get it off the host.
+
+this whole pipeline is configurable; you could upload to GCS, or save it to disk. etc.
 -->
 
 ---
@@ -240,6 +242,15 @@ cargo add dial9
 ```toml
 [dependencies]
 dial9 = { version = "0.5", features = ["tokio", "cpu-profiling"] }
+```
+
+<div class="text-sm text-gray-500 mt-6 mb-1">main.rs</div>
+
+```rust
+#[dial9::main(config = dial9::recorder_from_env)]
+async fn main() {
+    // your async code here
+}
 ```
 
 <!--
