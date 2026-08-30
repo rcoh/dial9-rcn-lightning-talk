@@ -1,195 +1,230 @@
 ---
 theme: default
-title: "dial9: Seeing What Tokio Is Actually Doing"
+title: "dial9: a flight recorder for Rust"
 info: |
-  dial9 - fine-grained runtime tracing for Tokio applications (RCN lightning talk)
+  dial9 - a flight recorder for Rust (RCN lightning talk)
 layout: cover
+colorSchema: light
 transition: fade
-duration: 5min
----
-
----
-layout: image-right
-image: /images/trace-hero.png
----
-
-# dial9
-
-WTF is Tokio actually doing?
-
-<div class="my-4">
-  <span class="text-gray-400">Russell Cohen · @rcoh</span>
-</div>
-
-<!--
-TODO: 30 second version of the intro. Who I am, why I ended up building this.
-
-Lightning talk budget: ~5 minutes. That's roughly 10 slides at 30s each. Cut ruthlessly.
--->
-
----
+duration: 10min
 class: text-center
 ---
 
-# Metrics exist.
-
-<v-click>
-But they don't tell the whole story.
-</v-click>
+<div class="flex flex-col items-center justify-center h-full">
+  <img src="/images/dial9-logo.svg" class="h-40 mb-8" />
+  <h1 class="text-5xl">dial9</h1>
+  <div class="text-2xl text-gray-500 mt-2">a flight recorder for Rust</div>
+</div>
 
 <!--
-TODO: the setup. Tokio gives you metrics, but they're aggregated and they update
-on a timer, so anything short-lived is invisible.
+Hello! I want to show folks dial9; dial9 is a flight recorder for Tokio (and Rust applications) in general. I get into what that means in a minute.
+-->
+
+---
+
+# Me
+
+<div class="mt-8 text-2xl">Russell Cohen</div>
+<div class="text-xl text-gray-500 mt-1">AWS</div>
+
+<div class="mt-10 text-xl leading-relaxed">
+
+- AWS SDK for Rust
+- `smithy-rs`
+- Occasional Tokio contributor
+
+</div>
+
+<!--
+First an extremely quick intro about myself for anyone who I don't know. I'm Russell, I've working on Rust and Rust related things at AWS for the last 6 years, for the first 4 the AWS SDK for Rust and now I work on a team focused on making Rust in general succesful at Amazon. It was on this team, getting pulled into a pretty frequent escalations to help people with the performance of Rust code, that the need for a flight recorder really became apparent. So at the beginning of this year, I started working on dial9.
+-->
+
+---
+layout: statement
+---
+
+# dial9: a flight recorder for Rust
+
+<!--
+dial9 is a flight recorder for Rust
+-->
+
+---
+
+# Why do we need a flight recorder?
+
+<div class="mt-10 text-2xl leading-loose">
+
+- record a large number of <span class="text-blue-500">events</span>, compactly and efficiently
+- easily get them off the host for analysis
+
+</div>
+
+<!--
+What is a flight recorder and why do we need one? Its a way to record a large number of events, say, 1M/s on a production system and get them _off_ the host without degrading application performance too much. But the word "event" is doing a lot of heavy lifting here.
+-->
+
+---
+
+<div class="text-2xl">
+record a large number of <span v-mark="{ at: 1, color: '#fec200', type: 'highlight' }">events</span>, compactly and efficiently
+</div>
+
+<h1 v-click="2" class="mt-12">What's an "event"?</h1>
+
+<div class="mt-10 space-y-8">
+  <div v-click="3" class="flex items-center gap-8">
+    <img src="/images/flamegraph.png" class="h-20 w-44 object-contain" />
+    <span class="text-2xl">CPU stack samples</span>
+  </div>
+  <div v-click="4" class="flex items-center gap-8">
+    <img src="/images/tracing-logo.png" class="h-20 w-44 object-contain" />
+    <span class="text-2xl">application events / <code>tracing</code></span>
+  </div>
+  <div v-click="5" class="flex items-center gap-8">
+    <img src="/images/tokio-logo.svg" class="h-14 w-44 object-contain invert" />
+    <span class="text-2xl">Tokio events</span>
+  </div>
+</div>
+
+<!--
+An event can be a stack trace sampled by perf, a tracing span you record in your application, or a Tokio worker parking and unparking; this is an open ended system. Yesterday someone sent a PR to collect metrics from NVIDIA GPUs and report them as events.
+
+[click] [click] [click] [click] [click]
+
+The thing that I realized helping teams with performance problems at AWS is that you often needed more than _just profiling_ or _just logs_ to solve a problem. You often needed the full picture. So that's what dial9 enables.
+-->
+
+---
+clicks: 1
+---
+
+# Fast and compact event serialization
+
+<div class="text-lg text-gray-500 mt-1">{{ $clicks >= 1 ? 'Bytes per event, after gzip level 1' : 'Wall-clock time to turn one event into bytes' }}</div>
+
+<div class="mt-10 space-y-8">
+  <div class="grid grid-cols-[230px_1fr_130px] gap-5 items-center">
+    <div class="text-right text-lg">dial9 trace format</div>
+    <div class="bg-gray-200 rounded h-8"><div class="bg-blue-500 rounded h-8 transition-all duration-700 ease-out" :style="{ width: ($clicks >= 1 ? '16.2%' : '1.9%') }"></div></div>
+    <div class="text-xl font-bold text-blue-500">{{ $clicks >= 1 ? '4.7 B' : '22 ns' }}</div>
+  </div>
+  <div class="grid grid-cols-[230px_1fr_130px] gap-5 items-center">
+    <div class="text-right text-lg">OTLP protobuf<br><span class="text-sm text-gray-500">(LogRecord)</span></div>
+    <div class="bg-gray-200 rounded h-8"><div class="bg-gray-400 rounded h-8 transition-all duration-700 ease-out" :style="{ width: ($clicks >= 1 ? '50.7%' : '30.8%') }"></div></div>
+    <div class="text-xl font-bold text-gray-500">{{ $clicks >= 1 ? '14.7 B' : '345 ns' }}</div>
+  </div>
+  <div class="grid grid-cols-[230px_1fr_130px] gap-5 items-center">
+    <div class="text-right text-lg">JSON<br><span class="text-sm text-gray-500">(tracing + JSON subscriber)</span></div>
+    <div class="bg-gray-200 rounded h-8"><div class="bg-amber-500 rounded h-8 transition-all duration-700 ease-out" :style="{ width: ($clicks >= 1 ? '92.4%' : '93.8%') }"></div></div>
+    <div class="text-xl font-bold text-amber-500">{{ $clicks >= 1 ? '26.8 B' : '1,050 ns' }}</div>
+  </div>
+</div>
+
+<div class="mt-12 text-xs text-gray-400">1M-event scheduler-telemetry mix (poll start/end, park, wake, CPU samples w/ stacks) · Apple M2 · medians of 8 runs</div>
+
+<!--
+Under the hood, it has two interesting ideas. The first is that by amortizing the schema in a datastream, you can have a datastream that is as flexible as JSON while being extremely compact and fast to serialize. This means that at runtime you can define a totally new type of event and it is still very efficient to serialize -- you don't have to codegen a serializer etc. etc.
+
+dial9 events take about 20-50ns to serialize
 
 [click]
+
+and they compress really well. You can end up with 10s of bytes per event uncompressed and under 10 bytes per event compressed. Each event also carries a nanosecond precision timestamp.
+-->
+
+---
+
+# Thread-local buffers
+
+<div class="text-lg text-gray-500 mt-1">no lock contention on the hot path</div>
+
+<div class="text-xs text-gray-400 mt-5 text-center">1 MB each · events encoded in place · every push checks the global epoch counter</div>
+
+<div class="mt-2 grid grid-cols-3 gap-5">
+  <div class="border border-gray-300 rounded p-3">
+    <div class="text-sm mb-2">thread 0</div>
+    <div class="bg-gray-200 rounded h-3"><div class="bg-blue-500 rounded h-3" style="width:72%"></div></div>
+  </div>
+  <div class="border border-gray-300 rounded p-3">
+    <div class="text-sm mb-2">thread 1</div>
+    <div class="bg-gray-200 rounded h-3"><div class="bg-blue-500 rounded h-3" style="width:45%"></div></div>
+  </div>
+  <div class="border border-dashed border-gray-400 rounded p-3">
+    <div class="text-sm mb-2">thread 2 <span class="text-gray-400">· idle</span></div>
+    <div class="bg-gray-200 rounded h-3"><div class="bg-amber-500 rounded h-3" style="width:8%"></div></div>
+  </div>
+</div>
+
+<svg viewBox="0 0 100 10" preserveAspectRatio="none" class="w-full h-10 text-gray-400 mt-3">
+  <line x1="16.6" y1="0" x2="50" y2="9" stroke="currentColor" stroke-width="1.5" vector-effect="non-scaling-stroke"/>
+  <line x1="50" y1="0" x2="50" y2="9" stroke="currentColor" stroke-width="1.5" vector-effect="non-scaling-stroke"/>
+  <line x1="83.3" y1="0" x2="50" y2="9" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4,3" vector-effect="non-scaling-stroke"/>
+</svg>
+
+<div class="flex justify-center">
+  <div class="border border-blue-500 bg-blue-500/10 rounded px-8 py-2 text-center">
+    <div class="text-lg font-bold text-blue-500">central buffer</div>
+    <div class="text-sm text-gray-500">lock-free <code>ArrayQueue</code> · single reader</div>
+  </div>
+</div>
+
+<div class="flex justify-center my-2 text-gray-400">
+  <svg width="14" height="24" viewBox="0 0 14 24"><line x1="7" y1="0" x2="7" y2="16" stroke="currentColor" stroke-width="1.5"/><polygon points="2.5,15 11.5,15 7,24" fill="currentColor"/></svg>
+</div>
+
+<div class="flex h-8 border border-gray-300 rounded overflow-hidden text-xs">
+  <div class="bg-gray-600 text-white flex items-center justify-center" style="width:8%">header</div>
+  <div class="bg-gray-200 flex items-center justify-center border-r border-gray-300" style="width:38%">batch · thread 0</div>
+  <div class="bg-gray-200 flex items-center justify-center border-r border-gray-300" style="width:24%">batch · thread 1</div>
+  <div class="bg-amber-200 border-r border-gray-300" style="width:5%"></div>
+  <div class="flex-1"></div>
+</div>
+
+<!--
+The second idea is that by, again, amortizing the cost of coordination, you can record events into large thread local buffers, which avoids lock contention when recording events.
 -->
 
 ---
 class: text-center
 ---
 
-<div class="text-3xl leading-relaxed">
+# Then get it off the host
 
-Their metrics updated every second.
-
-The problem lasted **18 milliseconds**.
-
+<div class="flex items-center justify-center gap-10 mt-16">
+  <img src="/images/dial9-logo.svg" class="h-32" />
+  <svg width="90" height="120" viewBox="0 0 90 120" class="text-gray-400">
+    <path d="M0 60h40M40 60L72 24m0 0h-10m10 0v10" stroke="currentColor" stroke-width="2" fill="none"/>
+    <path d="M40 60h32m0 0l-8-6m8 6l-8 6" stroke="currentColor" stroke-width="2" fill="none"/>
+    <path d="M40 60l32 36m0 0h-10m10 0v-10" stroke="currentColor" stroke-width="2" fill="none"/>
+  </svg>
+  <div class="flex flex-col gap-4 text-left">
+    <div class="border border-gray-300 rounded px-6 py-2 text-xl w-52">S3</div>
+    <div class="border border-gray-300 rounded px-6 py-2 text-xl w-52">Disk</div>
+    <div class="border border-dashed border-gray-400 rounded px-6 py-2 text-xl w-52 text-gray-400">???</div>
+  </div>
 </div>
 
 <!--
-TODO: the concrete story. One customer, one number, one punchline. This is the
-slide that makes the audience feel the problem.
+Finally, you can then upload, persist, or whatever you want with the buffer. dial9 has a plugin for S3 but this is open ended.
 -->
 
 ---
 layout: statement
 ---
 
-# What if you just recorded everything?
+# Where are we now?
 
 <!--
-TODO: the hypothesis. Record every poll, park, unpark, wake — cheaply enough
-that you can leave it on in prod.
--->
-
----
-
-# What dial9 records
-
-<div class="grid grid-cols-2 gap-6 mt-8 text-lg">
-  <div v-click class="border border-gray-700 rounded p-4">
-    <div class="text-blue-400 font-bold mb-2">Poll start / stop</div>
-    <div class="text-gray-400">Every task, every poll, with duration</div>
-  </div>
-  <div v-click class="border border-gray-700 rounded p-4">
-    <div class="text-blue-400 font-bold mb-2">Park / unpark</div>
-    <div class="text-gray-400">When workers went to sleep and who woke them</div>
-  </div>
-  <div v-click class="border border-gray-700 rounded p-4">
-    <div class="text-blue-400 font-bold mb-2">Wakes</div>
-    <div class="text-gray-400">Which task woke which, across runtimes</div>
-  </div>
-  <div v-click class="border border-gray-700 rounded p-4">
-    <div class="text-blue-400 font-bold mb-2">Stacks</div>
-    <div class="text-gray-400">Sampled frames, attached to the poll</div>
-  </div>
-</div>
-
-<!--
-TODO: keep this to one breath per box, or cut boxes. Four clicks is already a
-lot for a lightning talk.
--->
-
----
-layout: image
-image: /images/trace-hero.png
----
-
-<!--
-TODO: the money shot. Walk the trace: here's a long poll, here's the scheduling
-delay behind it, here's the stack that caused it.
-
-Replace this image with the screenshot that best tells the story in 45 seconds.
--->
-
----
-class: text-center
----
-
-<h1 class="text-6xl">~50ns per event</h1>
-
-<!--
-TODO: the "yes, but what does it cost" beat. Answer it before they ask it.
--->
-
----
-class: text-center
----
-
-<div class="flex flex-col items-center justify-center">
-<div class="text-xl mb-8 text-gray-400">Typical poll: 10μs. dial9 overhead: ~100ns.</div>
-<div class="w-120">
-  <div class="flex items-center gap-3 mb-4">
-    <div class="bg-blue-500 rounded h-12 w-full"></div>
-    <span class="text-sm whitespace-nowrap">Application poll: 10μs</span>
-  </div>
-  <div class="flex items-center gap-3">
-    <div class="bg-amber-500 rounded h-12" style="width:1%"></div>
-    <span class="text-sm whitespace-nowrap text-amber-500">2 dial9 events: 100ns</span>
-  </div>
-</div>
-<div class="mt-8 text-gray-400 text-lg">~1% overhead</div>
-</div>
-
-<!--
-TODO: one sentence. The bar chart does the work.
--->
-
----
-
-# Adding it to your app
-
-````md magic-move
-```rust
-#[tokio::main]
-async fn main() {
-    // your async code here
-}
-```
-```rust
-use dial9_tokio_telemetry::{main, config::{Dial9Config, Dial9ConfigBuilder}};
-
-fn dial9_config() -> Dial9Config {
-    Dial9ConfigBuilder::new(
-        "/tmp/my_traces/trace.bin",
-        50 * 1024 * 1024,   // 50MB max file
-        1000 * 1024 * 1024, // 1GB on disk
-    )
-    .build()
-}
-
-#[dial9_tokio_telemetry::main(config = dial9_config)]
-async fn main() {
-    // your async code here
-}
-```
-````
-
-<!--
-TODO: "it's an attribute macro" is the whole slide. Don't read the code.
+Since then, dial9 has been used in production across AWS and beyond including in the rama proxy. Judging by who is sending PRs and bug reports, its also being used by a bunch of other big Rust companies.
 -->
 
 ---
 layout: statement
 ---
 
-# The idea is the point.
-
-<div class="text-xl text-gray-400 mt-6">github.com/… · come find me after</div>
+# Demo
 
 <!--
-TODO: closer. The tool is just software; the idea that you can record all of
-this and make these problems tractable is the takeaway.
-
-Swap in the real link before the talk.
+I want to give a very quick demo of what you can actually do once you have this data.
 -->
