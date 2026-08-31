@@ -266,3 +266,42 @@ layout: statement
 <!--
 I want to give a very quick demo of what you can actually do once you have this data.
 -->
+
+---
+
+# What's hard?
+
+<div class="mt-10 text-xl leading-relaxed">
+
+- Full Tokio instrumentation requires instrumenting every spawned task (and there is no good way to do this)
+- <span class="text-blue-500">dial9</span> aims to be a "cafeteria profiler"; take what you want (more data, <span class="text-amber-500">more runtime overhead</span>). But this comes with complexity.
+
+</div>
+
+---
+
+# What's next?
+
+- Better analysis especially collaborative agent analysis
+- Improved platform support (Android, iOS etc.)
+- Squeezing out more performance
+- File an issue!
+
+---
+
+# Some links
+
+<div class="mt-8 text-xl leading-relaxed">
+
+the dial9 blog:
+
+- [dial9: a flight recorder for Rust](https://dial9-rs.github.io/blog/dial9-a-flight-recorder-for-rust/) (more details about internals)
+- [what's new in dial9 0.5](https://dial9-rs.github.io/blog/whats-new-in-dial9-0-5/)
+
+</div>
+
+<div class="mt-6 text-xl leading-relaxed">
+
+- [docs.rs](https://docs.rs/dial9/latest/dial9/)
+
+</div>
